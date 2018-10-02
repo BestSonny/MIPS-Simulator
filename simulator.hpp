@@ -154,7 +154,7 @@ protected:
 
             int currentInstructionNumber = currentNode->instructionNumber; // Get the current instruction number
             output = "Cycle " + to_string(cycle) + ":\t" + to_string(currentInstructionNumber) + "\t"; // Create the output string
-            cout << output << endl;
+            // cout << output << endl;
             // cout << cycle << endl;
             if(currentOperation == "J") {
 
@@ -373,7 +373,7 @@ protected:
                 int irs = stoi(rsReg); // rs register in integer form
                 string immediate = currentNode->immediate;
                 int io = stoi(immediate); // immediate value in integer form
-                cout << std::bitset<32>(lo) << " " << currentNode->immediate << " " << io << endl;
+                // cout << std::bitset<32>(lo) << " " << currentNode->immediate << " " << io << endl;
                 modRegisterValues[irt] = modRegisterValues[irs]|io;
 
                 output.append("ORI R" + rtReg + ", R" + rsReg + ", #" + immediate + "\n\n");
@@ -741,7 +741,6 @@ protected:
 
     if(operation == "ANDI" ||  operation == "ORI"){
       decimal = convertStringToUnsignedInt16(this->currentLineOrInstruction.substr(16,16));
-      cout << std::bitset<32>(decimal) << endl;
     }else{
       decimal = convertStringToInt16(this->currentLineOrInstruction.substr(16,16));
     }
