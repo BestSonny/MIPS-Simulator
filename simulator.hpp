@@ -85,35 +85,7 @@ public:
         }
         this->previous_operation = operation;
     } else { // The previous operation was BREAK, so we are now reading in the registers' values
-        // signed int registerValue;
 
-        // Convert two's complement string to decimal
-
-        // if(this->currentLineOrInstruction.substr(0,1) == "1") { // If the number is negative
-        //
-        //     string bvs = this->currentLineOrInstruction.substr(1,31); // Get the two's complement binary value of the number
-        //
-        //     // Swap the zeros and ones
-        //     replace(bvs.begin(), bvs.end(), '0', 'x');
-        //     replace(bvs.begin(), bvs.end(), '1', '0');
-        //     replace(bvs.begin(), bvs.end(), 'x', '1');
-        //
-        //     int bv = stoi(bvs) + 1; // Convert the binary string to an integer (we add one because the two's complement was negative)
-        //
-        //     int decimal = convertBinaryToDecimal(bv);
-        //     registerValue = decimal*(-1);
-        //
-        // } else { // The number is positive
-        //
-        //     string bvs = this->currentLineOrInstruction.substr(1,31); // Get the binary value of the number
-        //
-        //     int32_t decimal = convertStringToInt32(bvs);
-        //
-        //     // int decimal = convertBinaryToDecimal(bv);
-        //
-        //     registerValue = decimal;
-        //
-        // }
         string bvs = this->currentLineOrInstruction; // Get the binary value of the number
         int32_t registerValue = convertStringToInt32(bvs);
         // registerValue = decimal;
