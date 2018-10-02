@@ -13,15 +13,16 @@
 #include "simulator.hpp"
 using namespace std;
 
-int main(int argc, const char * argv[]) {
+int main(int argc, const char* argv[])
+{
 
     ifstream File(argv[1]);
 
     vector<string> instructions; // A vector to hold all the instructions in the file
     string currentLine;
 
-    while(getline(File, currentLine)) {
-        instructions.push_back(currentLine.substr(0,32));
+    while (getline(File, currentLine)) {
+        instructions.push_back(currentLine.substr(0, 32));
     }
 
     Simulator* mySimulator = new Simulator(instructions);
