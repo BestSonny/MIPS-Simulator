@@ -54,4 +54,48 @@ int convertBinaryToDecimal(int n)
     return decimalNumber;
 }
 
+int32_t convertStringToInt16(string str)
+{
+    int16_t data = 0;
+    string::iterator it;
+    int index = 0;
+    for (; index < 16; index++)
+    {
+      // cout << stoi(*it) + " " << (*it) << " "<< str[0];
+      data = data | (int16_t)(stoi(str.substr(index,1)) << (15-index));
+    }
+
+    data = (int32_t)((int16_t)data);
+    return data;
+}
+
+int32_t convertStringToUnsignedInt16(string str)
+{
+    uint16_t data = 0;
+    string::iterator it;
+    int index = 0;
+    for (; index < 16; index++)
+    {
+      // cout << stoi(*it) + " " << (*it) << " "<< str[0];
+      data = data | (uint16_t)(stoi(str.substr(index,1)) << (15-index));
+    }
+
+    data = (int32_t)((uint16_t)data);
+    return data;
+}
+
+int32_t convertStringToInt32(string str)
+{
+    int32_t data = 0;
+    string::iterator it;
+    int index = 0;
+    for (; index < 32; index++)
+    {
+      // cout << stoi(*it) + " " << (*it) << " "<< str[0];
+      data = data | (int32_t)(stoi(str.substr(index,1)) << (31-index));
+    }
+    return data;
+}
+
+
 #endif

@@ -14,7 +14,9 @@
 #include <vector>
 #include <algorithm>
 #include <unordered_map>
+#include <boost/lexical_cast.hpp>
 #include "utils.hpp"
+#include <bitset>
 using namespace std;
 
 class Simulator{
@@ -83,42 +85,44 @@ public:
         }
         this->previous_operation = operation;
     } else { // The previous operation was BREAK, so we are now reading in the registers' values
-        signed int registerValue;
+        // signed int registerValue;
 
         // Convert two's complement string to decimal
 
-        if(this->currentLineOrInstruction.substr(0,1) == "1") { // If the number is negative
-
-            string bvs = this->currentLineOrInstruction.substr(1,31); // Get the two's complement binary value of the number
-
-            // Swap the zeros and ones
-            replace(bvs.begin(), bvs.end(), '0', 'x');
-            replace(bvs.begin(), bvs.end(), '1', '0');
-            replace(bvs.begin(), bvs.end(), 'x', '1');
-
-            int bv = stoi(bvs) + 1; // Convert the binary string to an integer (we add one because the two's complement was negative)
-
-            int decimal = convertBinaryToDecimal(bv);
-            registerValue = decimal*(-1);
-
-        } else { // The number is positive
-
-            string bvs = this->currentLineOrInstruction.substr(1,31); // Get the binary value of the number
-
-            int bv = stoi(bvs); // Conver the binary string to an integer
-
-            int decimal = convertBinaryToDecimal(bv);
-
-            registerValue = decimal;
-
-        }
+        // if(this->currentLineOrInstruction.substr(0,1) == "1") { // If the number is negative
+        //
+        //     string bvs = this->currentLineOrInstruction.substr(1,31); // Get the two's complement binary value of the number
+        //
+        //     // Swap the zeros and ones
+        //     replace(bvs.begin(), bvs.end(), '0', 'x');
+        //     replace(bvs.begin(), bvs.end(), '1', '0');
+        //     replace(bvs.begin(), bvs.end(), 'x', '1');
+        //
+        //     int bv = stoi(bvs) + 1; // Convert the binary string to an integer (we add one because the two's complement was negative)
+        //
+        //     int decimal = convertBinaryToDecimal(bv);
+        //     registerValue = decimal*(-1);
+        //
+        // } else { // The number is positive
+        //
+        //     string bvs = this->currentLineOrInstruction.substr(1,31); // Get the binary value of the number
+        //
+        //     int32_t decimal = convertStringToInt32(bvs);
+        //
+        //     // int decimal = convertBinaryToDecimal(bv);
+        //
+        //     registerValue = decimal;
+        //
+        // }
+        string bvs = this->currentLineOrInstruction; // Get the binary value of the number
+        int32_t registerValue = convertStringToInt32(bvs);
+        // registerValue = decimal;
 
         registerValues.push_back(registerValue); // Store the just-computed register value into the registerValues vector for later access
 
         output.append(this->currentLineOrInstruction + "\t" + to_string(this->currentInstructionNumber) + "\t" + to_string(registerValue) + "\n");
 
     }
-
     decodedInstructions.push_back(this->decodedOutput); // Save our decoded instructions to the decodedInstructions vector
   }
 
@@ -150,7 +154,7 @@ protected:
 
             int currentInstructionNumber = currentNode->instructionNumber; // Get the current instruction number
             output = "Cycle " + to_string(cycle) + ":\t" + to_string(currentInstructionNumber) + "\t"; // Create the output string
-            // cout << output << endl;
+            cout << output << endl;
             // cout << cycle << endl;
             if(currentOperation == "J") {
 
@@ -319,9 +323,9 @@ protected:
                 string rdReg = currentNode->rd;
                 int ird = stoi(rdReg); // rd register in integer form
 
-                modRegisterValues[ird] = (unsigned int)modRegisterValues[irt]>>modRegisterValues[irs]; // Compute the bitwise OR of registers rt and rs
+                modRegisterValues[ird] = (unsigned int)modRegisterValues[irs]>>irt; // Compute the bitwise OR of registers rt and rs
 
-                output.append("SRL R" + rdReg + ", R" + rsReg + ", R" + rtReg + "\n\n");
+                output.append("SRL R" + rdReg + ", R" + rsReg + ", #" + rtReg + "\n\n");
 
             } else if(currentOperation == "SRA") {
 
@@ -331,10 +335,9 @@ protected:
                 int irs = stoi(rsReg); // rs register in integer form
                 string rdReg = currentNode->rd;
                 int ird = stoi(rdReg); // rd register in integer form
+                modRegisterValues[ird] = modRegisterValues[irs]>>irt; // Compute the bitwise OR of registers rt and rs
 
-                modRegisterValues[ird] = modRegisterValues[irt]>>modRegisterValues[irs]; // Compute the bitwise OR of registers rt and rs
-
-                output.append("SRA R" + rdReg + ", R" + rsReg + ", R" + rtReg + "\n\n");
+                output.append("SRA R" + rdReg + ", R" + rsReg + ", #" + rtReg + "\n\n");
 
             } else if(currentOperation == "ADDI") {
 
@@ -370,7 +373,7 @@ protected:
                 int irs = stoi(rsReg); // rs register in integer form
                 string immediate = currentNode->immediate;
                 int io = stoi(immediate); // immediate value in integer form
-
+                cout << std::bitset<32>(lo) << " " << currentNode->immediate << " " << io << endl;
                 modRegisterValues[irt] = modRegisterValues[irs]|io;
 
                 output.append("ORI R" + rtReg + ", R" + rsReg + ", #" + immediate + "\n\n");
@@ -454,7 +457,7 @@ protected:
             if(currentOperation == "BREAK") {
                 dataSection.append(to_string(registerValues[14]) + "\t" + to_string(registerValues[15]) + "\n");
             } else {
-                dataSection.append(to_string(registerValues[14]) + "\t" + to_string(registerValues[15]) + "\n\n");
+                dataSection.append(to_string(registerValues[14]) + "\t" + to_string(registerValues[15]) + "\n");
             }
 
             // Print the output
@@ -512,8 +515,8 @@ protected:
         string rt_naked = to_string(decimal);
         string rt_printable = "R" + rt_naked;
 
-        int of = stoi(this->currentLineOrInstruction.substr(16,16));
-        decimal = convertBinaryToDecimal(of);
+        decimal = convertStringToInt16(this->currentLineOrInstruction.substr(16,16));
+        // decimal = convertBinaryToDecimal(of);
         string of_naked = to_string(4*decimal);
         string of_printable = "#" + of_naked;
 
@@ -543,15 +546,15 @@ protected:
         string rt_naked = to_string(decimal);
         string rt_printable = "R" + rt_naked;
 
-        int of = stoi(this->currentLineOrInstruction.substr(16,16));
-        decimal = convertBinaryToDecimal(of);
+        decimal = convertStringToInt16(this->currentLineOrInstruction.substr(16,16));
+        // decimal = convertBinaryToDecimal(of);
         string of_naked = to_string(4*decimal);
         string of_printable = "#" + of_naked;
 
         this->decodedOutput = "BNE " + rs_printable + ", " + rt_printable + ", " + of_printable;
         output.append(this->currentLineOrInstruction + "\t" + to_string(this->currentInstructionNumber) + "\t" + this->decodedOutput + "\n");
 
-        Node* tempNode = new Node(this->currentInstructionNumber, "BEQ", "", "", of_naked, "", rt_naked, "", rs_naked, nullptr);
+        Node* tempNode = new Node(this->currentInstructionNumber, "BNE", "", "", of_naked, "", rt_naked, "", rs_naked, nullptr);
         if(currentNode != nullptr) {
             while(currentNode->next != nullptr) {
                 currentNode = currentNode->next;
@@ -569,8 +572,8 @@ protected:
         string rs_naked = to_string(decimal);
         string rs_printable = "R" + rs_naked;
 
-        int of = stoi(this->currentLineOrInstruction.substr(16,16));
-        decimal = convertBinaryToDecimal(of);
+        decimal = convertStringToInt16(this->currentLineOrInstruction.substr(16,16));
+        // decimal = convertBinaryToDecimal(of);
         string of_naked = to_string(4*decimal);
         string of_printable = "#" + of_naked;
 
@@ -600,8 +603,8 @@ protected:
         string rt_naked = to_string(decimal);
         string rt_printable = "R" + rt_naked;
 
-        int of = stoi(this->currentLineOrInstruction.substr(16,16));
-        decimal = convertBinaryToDecimal(of);
+        decimal = convertStringToInt16(this->currentLineOrInstruction.substr(16,16));
+        // decimal = convertBinaryToDecimal(of);
         string of_naked = to_string(decimal);
         string of_printable = of_naked;
 
@@ -631,8 +634,8 @@ protected:
         string rt_naked = to_string(decimal);
         string rt_printable = "R" + rt_naked;
 
-        int of = stoi(this->currentLineOrInstruction.substr(16,16));
-        decimal = convertBinaryToDecimal(of);
+        decimal = convertStringToInt16(this->currentLineOrInstruction.substr(16,16));
+        // decimal = convertBinaryToDecimal(of);
         string of_naked = to_string(decimal);
         string of_printable = of_naked;
 
@@ -692,15 +695,18 @@ protected:
     decimal = convertBinaryToDecimal(rt);
     string rt_naked = to_string(decimal);
     string rt_printable = "R" + rt_naked;
+    if(operation == "SRL" || operation == "SRA"){
+      rt_printable = "#" + rt_naked;
+    }
 
     int rd = stoi(this->currentLineOrInstruction.substr(6,5));
     decimal = convertBinaryToDecimal(rd);
     string rd_naked = to_string(decimal);
     string rd_printable = "R" + rd_naked;
 
+
     this->decodedOutput = operation + " " + rd_printable + ", " + rs_printable + ", " + rt_printable;
     output.append(this->currentLineOrInstruction + "\t" + to_string(this->currentInstructionNumber) + "\t" + this->decodedOutput + "\n");
-
     Node* tempNode = new Node(this->currentInstructionNumber, operation, "", "", "", "", rt_naked, rd_naked, rs_naked, nullptr);
     if(currentNode != nullptr) {
         while(currentNode->next != nullptr) {
@@ -733,8 +739,15 @@ protected:
     string rs_naked = to_string(decimal);
     string rs_printable = "R" + rs_naked;
 
-    int iv = stoi(this->currentLineOrInstruction.substr(16,16)); // immediate value in binary format
-    decimal = convertBinaryToDecimal(iv);
+    if(operation == "ANDI" ||  operation == "ORI"){
+      decimal = convertStringToUnsignedInt16(this->currentLineOrInstruction.substr(16,16));
+      cout << std::bitset<32>(decimal) << endl;
+    }else{
+      decimal = convertStringToInt16(this->currentLineOrInstruction.substr(16,16));
+    }
+    // cout << x << endl;
+    // int iv = stoi(this->currentLineOrInstruction.substr(16,16)); // immediate value in binary format
+    // decimal = convertBinaryToDecimal(iv);
     string iv_naked = to_string(decimal);
     string iv_printable = "#" + iv_naked; // Printable immediate value
 
