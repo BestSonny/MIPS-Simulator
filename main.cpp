@@ -15,13 +15,13 @@ using namespace std;
 
 int main(int argc, const char * argv[]) {
 
-    ifstream File(argv[1]); // Open the file entered at the command line
+    ifstream File(argv[1]);
 
     vector<string> instructions; // A vector to hold all the instructions in the file
-    string currentLine; // A string to temporarily hold each line of the file
+    string currentLine;
 
-    while(getline(File, currentLine)) { // Read in the file while it still has lines to be read
-        instructions.push_back(currentLine.substr(0,32)); // Push the read line onto the end of the vector
+    while(getline(File, currentLine)) {
+        instructions.push_back(currentLine.substr(0,32));
     }
 
     int currentInstructionNumber = 256; // The number of the current instruction
@@ -60,9 +60,7 @@ int main(int argc, const char * argv[]) {
                     operation = "J";
 
                     int il = stoi(currentLineOrInstruction.substr(6, 26)); // Get the jump's instruction location
-                    int decimal = 0; // Initialize decimal number
-                    int remainder, base = 1; // Initialize remainder and base
-                    while(il > 0) {remainder = il%10; decimal=decimal+(remainder*base); base=base*2; il=il/10;} // Convert il to decimal format
+                    int decimal = convertBinaryToDecimal(il);
                     string il_naked = to_string(4*decimal);
                     string il_printable = "#" + il_naked;
 
@@ -83,23 +81,17 @@ int main(int argc, const char * argv[]) {
                     operation = "BEQ";
 
                     int rs = stoi(currentLineOrInstruction.substr(6,5)); // Get the rs register in binary format
-                    int decimal = 0; // Initialize decimal number
-                    int remainder, base = 1; // Initialize remainder and base
-                    while(rs > 0) {remainder = rs%10; decimal=decimal+(remainder*base); base=base*2; rs=rs/10;} // Convert rs to decimal format
+                    int decimal = convertBinaryToDecimal(rs);
                     string rs_naked = to_string(decimal);
                     string rs_printable = "R" + rs_naked; // Full, printable rs register name
 
                     int rt = stoi(currentLineOrInstruction.substr(11,5)); // Get the rt register in binary format
-                    decimal = 0; // Reset decimal number
-                    base = 1; // Reset base
-                    while(rt > 0) {remainder = rt%10; decimal=decimal+(remainder*base); base=base*2; rt=rt/10;} // Convert rt to decimal format
+                    decimal = convertBinaryToDecimal(rt);
                     string rt_naked = to_string(decimal);
                     string rt_printable = "R" + rt_naked; // Full, printable rt register name
 
                     int of = stoi(currentLineOrInstruction.substr(16,16)); // Get the offset in binary format
-                    decimal = 0; // Reset decimal number
-                    base = 1; // Reset base
-                    while(of > 0) {remainder = of%10; decimal=decimal+(remainder*base); base=base*2; of=of/10;} // Convert of to decimal format
+                    decimal = convertBinaryToDecimal(of);
                     string of_naked = to_string(4*decimal);
                     string of_printable = "#" + of_naked; // Printable offset value
 
@@ -120,16 +112,12 @@ int main(int argc, const char * argv[]) {
                     operation = "BGTZ";
 
                     int rs = stoi(currentLineOrInstruction.substr(6,5)); // Get the rs register in binary format
-                    int decimal = 0; // Initialize decimal number
-                    int remainder, base = 1; // Initialize remainder and base
-                    while(rs > 0) {remainder = rs%10; decimal=decimal+(remainder*base); base=base*2; rs=rs/10;} // Convert rs to decimal format
+                    int decimal = convertBinaryToDecimal(rs);
                     string rs_naked = to_string(decimal);
                     string rs_printable = "R" + rs_naked; // Full, printable rs register name
 
                     int of = stoi(currentLineOrInstruction.substr(16,16)); // Get the offset in binary format
-                    decimal = 0; // Reset decimal number
-                    base = 1; // Reset base
-                    while(of > 0) {remainder = of%10; decimal=decimal+(remainder*base); base=base*2; of=of/10;} // Convert of to decimal format
+                    decimal = convertBinaryToDecimal(of);
                     string of_naked = to_string(4*decimal);
                     string of_printable = "#" + of_naked; // Printable offset value
 
@@ -166,23 +154,17 @@ int main(int argc, const char * argv[]) {
                     operation = "SW";
 
                     int br = stoi(currentLineOrInstruction.substr(6,5)); // Get the base register in binary format
-                    int decimal = 0; // Initialize decimal number
-                    int remainder, base = 1; // Initialize remainder and base
-                    while(br > 0) {remainder = br%10; decimal=decimal+(remainder*base); base=base*2; br=br/10;} // Convert br to decimal format
+                    int decimal = convertBinaryToDecimal(br);
                     string br_naked = to_string(decimal);
                     string br_printable = "R" + br_naked; // Full, printable rs register name
 
                     int rt = stoi(currentLineOrInstruction.substr(11,5)); // Get the rt register in binary format
-                    decimal = 0; // Reset decimal number
-                    base = 1; // Reset base
-                    while(rt > 0) {remainder = rt%10; decimal=decimal+(remainder*base); base=base*2; rt=rt/10;} // Convert rt to decimal format
+                    decimal = convertBinaryToDecimal(rt);
                     string rt_naked = to_string(decimal);
                     string rt_printable = "R" + rt_naked; // Full, printable rt register name
 
                     int of = stoi(currentLineOrInstruction.substr(16,16)); // Get the offset in binary format
-                    decimal = 0; // Reset decimal number
-                    base = 1; // Reset base
-                    while(of > 0) {remainder = of%10; decimal=decimal+(remainder*base); base=base*2; of=of/10;} // Convert of to decimal format
+                    decimal = convertBinaryToDecimal(of);
                     string of_naked = to_string(decimal);
                     string of_printable = of_naked; // Printable offset value
 
@@ -203,23 +185,17 @@ int main(int argc, const char * argv[]) {
                     operation = "LW";
 
                     int br = stoi(currentLineOrInstruction.substr(6,5)); // Get the base register in binary format
-                    int decimal = 0; // Initialize decimal number
-                    int remainder, base = 1; // Initialize remainder and base
-                    while(br > 0) {remainder = br%10; decimal=decimal+(remainder*base); base=base*2; br=br/10;} // Convert br to decimal format
+                    int decimal = convertBinaryToDecimal(br);
                     string br_naked = to_string(decimal);
                     string br_printable = "R" + br_naked; // Full, printable rs register name
 
                     int rt = stoi(currentLineOrInstruction.substr(11,5)); // Get the rt register in binary format
-                    decimal = 0; // Reset decimal number
-                    base = 1; // Reset base
-                    while(rt > 0) {remainder = rt%10; decimal=decimal+(remainder*base); base=base*2; rt=rt/10;} // Convert rt to decimal format
+                    decimal = convertBinaryToDecimal(rt);
                     string rt_naked = to_string(decimal);
                     string rt_printable = "R" + rt_naked; // Full, printable rt register name
 
                     int of = stoi(currentLineOrInstruction.substr(16,16)); // Get the offset in binary format
-                    decimal = 0; // Reset decimal number
-                    base = 1; // Reset base
-                    while(of > 0) {remainder = of%10; decimal=decimal+(remainder*base); base=base*2; of=of/10;} // Convert of to decimal format
+                    decimal = convertBinaryToDecimal(of);
                     string of_naked = to_string(decimal);
                     string of_printable = of_naked; // Printable offset value
 
@@ -256,23 +232,17 @@ int main(int argc, const char * argv[]) {
                 }
 
                 int rs = stoi(currentLineOrInstruction.substr(11,5)); // rs register number in binary format
-                int decimal = 0; // Initialize decimal number
-                int remainder, base = 1; // Initialize remainder and base
-                while(rs > 0) {remainder = rs%10; decimal=decimal+(remainder*base); base=base*2; rs=rs/10;} // Convert rs to decimal format
+                int decimal = convertBinaryToDecimal(rs);
                 string rs_naked = to_string(decimal);
                 string rs_printable = "R" + rs_naked; // Full, printable rs register name
 
                 int rt = stoi(currentLineOrInstruction.substr(16,5)); // rt register number in binary format
-                decimal = 0; // Reset decimal number
-                base = 1; // Reset base
-                while(rt > 0) {remainder = rt%10; decimal=decimal+(remainder*base); base=base*2; rt=rt/10;} // Convert rt to decimal format
+                decimal = convertBinaryToDecimal(rt);
                 string rt_naked = to_string(decimal);
                 string rt_printable = "R" + rt_naked; // Full, printable rt register name
 
                 int rd = stoi(currentLineOrInstruction.substr(6,5)); // rd register number in binary format
-                decimal = 0; // Reset decimal number
-                base = 1; // Reset base
-                while(rd > 0) {remainder = rd%10; decimal=decimal+(remainder*base); base=base*2; rd=rd/10;} // Convert rd to decimal format
+                decimal = convertBinaryToDecimal(rd);
                 string rd_naked = to_string(decimal);
                 string rd_printable = "R" + rd_naked; // Full, printable rd register name
 
@@ -301,25 +271,17 @@ int main(int argc, const char * argv[]) {
                 }
 
                 int rt = stoi(currentLineOrInstruction.substr(6,5)); // rt register number in binary format
-                int decimal = 0; // Initialize decimal number
-                int remainder, base = 1; // Initialize remainder and base
-                while(rt > 0) {remainder = rt%10; decimal=decimal+(remainder*base); base=base*2; rt=rt/10;} // Convert rt to decimal format
+                int decimal = convertBinaryToDecimal(rt);
                 string rt_naked = to_string(decimal);
                 string rt_printable = "R" + rt_naked; // Full, printable rt register name
 
                 int rs = stoi(currentLineOrInstruction.substr(11,5)); // rs register number in binary format
-                //cout << "cat3, rs: " << currentLineOrInstruction.substr(2,5) << endl;
-                decimal = 0; // Reset decimal number
-                base = 1; // Reset base
-                while(rs > 0) {remainder = rs%10; decimal=decimal+(remainder*base); base=base*2; rs=rs/10;} // Convert rs to decimal format
+                decimal = convertBinaryToDecimal(rs);
                 string rs_naked = to_string(decimal);
                 string rs_printable = "R" + rs_naked; // Full, printable rs register name
 
                 int iv = stoi(currentLineOrInstruction.substr(16,16)); // immediate value in binary format
-                //cout << "cat3, iv: " << currentLineOrInstruction.substr(16,16) << endl;
-                decimal = 0; // Reset decimal number
-                base = 1; // Reset base
-                while(iv > 0) {remainder = iv%10; decimal=decimal+(remainder*base); base=base*2; iv=iv/10;} // Convert rd to decimal format
+                decimal = convertBinaryToDecimal(iv);
                 string iv_naked = to_string(decimal);
                 string iv_printable = "#" + iv_naked; // Printable immediate value
 
@@ -345,18 +307,12 @@ int main(int argc, const char * argv[]) {
                 }
 
                 int rt = stoi(currentLineOrInstruction.substr(6,5)); // rt register number in binary format
-                //cout << "cat3, rt: " << currentLineOrInstruction.substr(7,5) << ". int form: " << stoi(currentLineOrInstruction.substr(7,5)) << endl;
-                int decimal = 0; // Initialize decimal number
-                int remainder, base = 1; // Initialize remainder and base
-                while(rt > 0) {remainder = rt%10; decimal=decimal+(remainder*base); base=base*2; rt=rt/10;} // Convert rt to decimal format
+                int decimal = convertBinaryToDecimal(rt);
                 string rt_naked = to_string(decimal);
                 string rt_printable = "R" + rt_naked; // Full, printable rt register name
 
                 int rs = stoi(currentLineOrInstruction.substr(11,5)); // rs register number in binary format
-                //cout << "cat3, rs: " << currentLineOrInstruction.substr(2,5) << endl;
-                decimal = 0; // Reset decimal number
-                base = 1; // Reset base
-                while(rs > 0) {remainder = rs%10; decimal=decimal+(remainder*base); base=base*2; rs=rs/10;} // Convert rs to decimal format
+                decimal = convertBinaryToDecimal(rs);
                 string rs_naked = to_string(decimal);
                 string rs_printable = "R" + rs_naked; // Full, printable rs register name
 
@@ -382,10 +338,7 @@ int main(int argc, const char * argv[]) {
                 }
 
                 int rt = stoi(currentLineOrInstruction.substr(6,5)); // rt register number in binary format
-                //cout << "cat3, rt: " << currentLineOrInstruction.substr(7,5) << ". int form: " << stoi(currentLineOrInstruction.substr(7,5)) << endl;
-                int decimal = 0; // Initialize decimal number
-                int remainder, base = 1; // Initialize remainder and base
-                while(rt > 0) {remainder = rt%10; decimal=decimal+(remainder*base); base=base*2; rt=rt/10;} // Convert rt to decimal format
+                int decimal = convertBinaryToDecimal(rt);
                 string rt_naked = to_string(decimal);
                 string rt_printable = "R" + rt_naked; // Full, printable rt register name
 
@@ -420,9 +373,7 @@ int main(int argc, const char * argv[]) {
 
                 int bv = stoi(bvs) + 1; // Convert the binary string to an integer (we add one because the two's complement was negative)
 
-                int decimal = 0;
-                int remainder, base = 1;
-                while(bv > 0) {remainder = bv%10; decimal=decimal+(remainder*base); base=base*2; bv=bv/10;} // Convert the binary value to its decimal value
+                int decimal = convertBinaryToDecimal(bv);
                 registerValue = decimal*(-1);
 
             } else { // The number is positive
@@ -431,9 +382,7 @@ int main(int argc, const char * argv[]) {
 
                 int bv = stoi(bvs); // Conver the binary string to an integer
 
-                int decimal = 0;
-                int remainder, base = 1;
-                while(bv > 0) {remainder = bv%10; decimal=decimal+(remainder*base); base=base*2; bv=bv/10;} // Convert the binary value to its decimal value
+                int decimal = convertBinaryToDecimal(bv);
 
                 registerValue = decimal;
 
