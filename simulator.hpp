@@ -149,7 +149,7 @@ protected:
             string currentOperation = currentNode->operation; // Get the current instruction's operation
 
             int currentInstructionNumber = currentNode->instructionNumber; // Get the current instruction number
-            output = "Cycle:" + to_string(cycle) + "\t" + to_string(currentInstructionNumber) + "\t"; // Create the output string
+            output = "Cycle " + to_string(cycle) + ":\t" + to_string(currentInstructionNumber) + "\t"; // Create the output string
             // cout << output << endl;
             // cout << cycle << endl;
             if(currentOperation == "J") {
