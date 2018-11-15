@@ -59,7 +59,7 @@ public:
   vector<int> Buf4;
   vector<int> Buf5;
   int Buf6[3];
-  uint32_t Buf7[3];
+  int32_t Buf7[3];
   int Buf8[3];
   int Buf9[3];
   int Buf10[3];//0 - instr, 1- destination reg, 2 - result/source/mem dest
@@ -73,12 +73,14 @@ public:
   vector<int> Buf4_Update;
   vector<int> Buf5_Update;
   int Buf6_Update[3];
-  uint32_t Buf7_Update[3];
+  int32_t Buf7_Update[3];
   int Buf8_Update[3];
   int Buf9_Update[3];
   int Buf10_Update[3];
   int Buf11_Update[3];
   int32_t Buf12_Update[3];
+
+  vector<DivResult> buff7Board;
 
   int preIssueRead[34];
   int preIssueWrite[34];	//for checking harzeds within preIssueBuffer
@@ -295,7 +297,7 @@ protected:
     simFile << "Buf5:\n\tEntry 0: " << (0 < buffersize ? "[" + decodedInstructions[this->Buf5[0]] + "]" : empty)
       << "\n\tEntry 1: " << (1 < buffersize ? "[" + decodedInstructions[this->Buf5[1]] + "]" : empty) << "\n";
     simFile << "Buf6: " << (this->Buf6[0] < 0 ? empty : "[" + decodedInstructions[this->Buf6[0]] + "]") << "\n";
-    simFile << "Buf7: " << (this->Buf7[0] < 0 ? empty : "[" + to_string(this->Buf7[2]) + ", " + to_string(this->Buf7[1]) +  "]") << "\n";
+    simFile << "Buf7: " << ((int)(this->Buf7[0]) < 0 ? empty : "[" + to_string((uint32_t)(this->Buf7[2])) + ", " + to_string((uint32_t)(this->Buf7[1])) +  "]") << "\n";
     simFile << "Buf8: " << (this->Buf8[0] < 0 ? empty : "[" + decodedInstructions[this->Buf8[0]] + "]") << "\n";
     simFile << "Buf9: " << (this->Buf9[0] < 0 ? empty : "[" + to_string(this->Buf9[2]) + ", R" + to_string(this->Buf9[1]) +  "]") << "\n";
     simFile << "Buf10: " << (this->Buf10[0] < 0 ? empty : "[" + to_string(this->Buf10[2]) + ", R" + to_string(this->Buf10[1]) + "]") << "\n";
@@ -634,6 +636,14 @@ protected:
 
     this->Buf7_Update[0] = -1;
 
+    if ((buff7Board.size() > 0) && ((cycle-buff7Board[0].clock) >= 3)) {
+        DivResult i = buff7Board[0];
+        buff7Board.erase(buff7Board.begin());
+        this->Buf7_Update[0] = i.idx;
+        this->Buf7_Update[1] = i.quotient;
+        this->Buf7_Update[2] = i.remainder;
+    }
+
   	if (this->Buf3.size() > 0)//FPpreMem = {instr idx, destination reg, result/source/mem dest}
   	{
       int idx = this->Buf3[0];
@@ -650,20 +660,35 @@ protected:
       string rsReg = currentNode->rs;
       int rs = stoi(rsReg); // rt register in integer form
 
-      this->Buf7_Update[0] = idx;
 
+      // this->Buf7_Update[0] = idx;
+
+      uint32_t remainder = 0;
+      uint32_t quotient = 0;
       if (modRegisterValues[rs] != 0){
         // Unsure about whether the remainder should be -ve or +ve when dividing a -ve number: This gives a -ve remainder
-        int32_t remainder = (int32_t)modRegisterValues[rt] % (int32_t)modRegisterValues[rs];
-        int32_t quotient = (int32_t)modRegisterValues[rt] / (int32_t)modRegisterValues[rs];
+        remainder = (int32_t)modRegisterValues[rt] % (int32_t)modRegisterValues[rs];
+        quotient = (int32_t)modRegisterValues[rt] / (int32_t)modRegisterValues[rs];
 
-        this->Buf7_Update[1] = (uint32_t)quotient;
-        this->Buf7_Update[2] = (uint32_t)remainder;
-      } else{
-        this->Buf7_Update[1] = 0;
-        this->Buf7_Update[2] = 0;
+        // this->Buf7_Update[1] = (uint32_t)quotient;
+        // this->Buf7_Update[2] = (uint32_t)remainder;
       }
+      // } else{
+      //   // this->Buf7_Update[1] = 0;
+      //   // this->Buf7_Update[2] = 0;
+      //   // DivResult result = DivResult(idx,  0, 0, cycle);
+      //   int32_t remainder = 0;
+      //   int32_t quotient = 0;
+      // }
+
+      DivResult result = DivResult(idx,  remainder, quotient, cycle);
+
       regsInRead[rs] = 0; regsInRead[rt] = 0;
+
+      // Enqueue to buff7Board before 4 cycles are passed
+      buff7Board.push_back(result);
+
+
   	}
   	return 0;
   }
@@ -895,12 +920,6 @@ protected:
   		this->Buf9[0] = -1;//reseting this is unnecessary, since it will be replaced by FPpostALU anyway
   	}
 
-    if (this->Buf9[0] != -1) {
-  		modRegisterValues[this->Buf9[1]] = this->Buf9[2];// 1 - destination register, 2 - value
-  		regsInWrite[this->Buf9[1]] = 0;//release rd(or rt)
-  		this->Buf9[0] = -1;//reseting this is unnecessary, since it will be replaced by FPpostALU anyway
-  	}
-
   	//postMEM write back - only for LW instr
   	if (this->Buf10[0] != -1) {
   		modRegisterValues[this->Buf10[1]] = this->Buf10[2];// 1 - destination register, 2 - value
@@ -921,7 +940,7 @@ protected:
     if (this->Buf7[0] != -1) {
 
   		modRegisterValues[33] = this->Buf7[1];// 1 - destination register, 2 - value
-  		regsInWrite[32] = this->Buf7[2]; //release rd//release rt for LW
+  		modRegisterValues[32] = this->Buf7[2]; //release rd//release rt for LW
       // regsInWrite[32] = 0;//release rd//release rt for LW
       regsInWrite[33] = 0;//release rd//release rt for LW
       regsInWrite[32] = 0;//release rd//release rt for LW
