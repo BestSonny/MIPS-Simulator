@@ -59,12 +59,12 @@ public:
   vector<int> Buf4;
   vector<int> Buf5;
   int Buf6[3];
-  int Buf7[3];
+  uint32_t Buf7[3];
   int Buf8[3];
   int Buf9[3];
   int Buf10[3];//0 - instr, 1- destination reg, 2 - result/source/mem dest
   int Buf11[3];
-  int Buf12[3];
+  int32_t Buf12[3];
 
 
   vector<int> Buf1_Update; // Pre-Issue buffer (Buf1)
@@ -73,16 +73,16 @@ public:
   vector<int> Buf4_Update;
   vector<int> Buf5_Update;
   int Buf6_Update[3];
-  int Buf7_Update[3];
+  uint32_t Buf7_Update[3];
   int Buf8_Update[3];
   int Buf9_Update[3];
   int Buf10_Update[3];
   int Buf11_Update[3];
-  int Buf12_Update[3];
+  int32_t Buf12_Update[3];
 
-  int preIssueRead[32];
-  int preIssueWrite[32];	//for checking harzeds within preIssueBuffer
-  int regsInRead[32], regsInWrite[32]; //issue() records regs to read/write
+  int preIssueRead[34];
+  int preIssueWrite[34];	//for checking harzeds within preIssueBuffer
+  int regsInRead[34], regsInWrite[34]; //issue() records regs to read/write
 
   int waitInstr; //index of waitting instr
   int execInstr; //index of executing instr
@@ -107,10 +107,10 @@ public:
 
     this->cycle = 1;
 
-    std::fill(this->preIssueWrite, this->preIssueWrite+32, 0);//reset preIssue read/write table
-  	std::fill(this->preIssueRead, this->preIssueRead+32, 0);
-    std::fill(this->regsInRead, this->regsInRead+32, 0);
-    std::fill(this->regsInWrite, this->regsInWrite+32, 0);
+    std::fill(this->preIssueWrite, this->preIssueWrite+34, 0);//reset preIssue read/write table
+  	std::fill(this->preIssueRead, this->preIssueRead+34, 0);
+    std::fill(this->regsInRead, this->regsInRead+34, 0);
+    std::fill(this->regsInWrite, this->regsInWrite+34, 0);
 
     std::fill(this->Buf6_Update, this->Buf6_Update+3, -1);
     std::fill(this->Buf7_Update, this->Buf7_Update+3, -1);
@@ -159,7 +159,7 @@ public:
     // reset
     this->currentInstructionNumber = 256;
     pipeline();
-    // this->simFile.close();
+    this->simFile.close();
   }
 
   // Decodes the instruction into its parts
@@ -194,7 +194,7 @@ public:
 protected:
 
   void display_lock(){
-    string registersSection = "PreIssueRead\n";
+    string registersSection = "\nPreIssueRead\n";
     registersSection.append("R00:\t" + to_string(preIssueRead[0]) + "\t" + to_string(preIssueRead[1]) + "\t");
     registersSection.append(to_string(preIssueRead[2]) + "\t" + to_string(preIssueRead[3]) + "\t");
     registersSection.append(to_string(preIssueRead[4]) + "\t" + to_string(preIssueRead[5]) + "\t");
@@ -268,10 +268,10 @@ protected:
   void display(){
 
     string empty = "";
-    //printing of file starts
+    // printing of file starts
     simFile << "--------------------" << endl;
-    simFile << "Cycle:" << cycle++ << endl << endl;
-    simFile << "IF Unit:\n\tWaiting: " << (waitInstr < 0 ? empty : "[" + decodedInstructions[waitInstr] + "]")
+    simFile << "Cycle " << cycle++ << ":" << endl << endl;
+    simFile << "IF:\n\tWaiting: " << (waitInstr < 0 ? empty : "[" + decodedInstructions[waitInstr] + "]")
       << "\n\tExecuted: " << (execInstr < 0 ? empty : "[" + decodedInstructions[execInstr] + "]") << "\n";
     int buffersize = this->Buf1.size();
     simFile << "Buf1:\n\tEntry 0: " << (0 < buffersize ? "[" + decodedInstructions[this->Buf1[0]] + "]" : empty)
@@ -289,8 +289,18 @@ protected:
     simFile << "Buf3:\n\tEntry 0: " << (0 < buffersize ? "[" + decodedInstructions[this->Buf3[0]] + "]" : empty)
       << "\n\tEntry 1: " << (1 < buffersize ? "[" + decodedInstructions[this->Buf3[1]] + "]" : empty) << "\n";
     buffersize = this->Buf4.size();
-    simFile << "Buf3:\n\tEntry 0: " << (0 < buffersize ? "[" + decodedInstructions[this->Buf4[0]] + "]" : empty)
+    simFile << "Buf4:\n\tEntry 0: " << (0 < buffersize ? "[" + decodedInstructions[this->Buf4[0]] + "]" : empty)
       << "\n\tEntry 1: " << (1 < buffersize ? "[" + decodedInstructions[this->Buf4[1]] + "]" : empty) << "\n";
+    buffersize = this->Buf5.size();
+    simFile << "Buf5:\n\tEntry 0: " << (0 < buffersize ? "[" + decodedInstructions[this->Buf5[0]] + "]" : empty)
+      << "\n\tEntry 1: " << (1 < buffersize ? "[" + decodedInstructions[this->Buf5[1]] + "]" : empty) << "\n";
+    simFile << "Buf6: " << (this->Buf6[0] < 0 ? empty : "[" + decodedInstructions[this->Buf6[0]] + "]") << "\n";
+    simFile << "Buf7: " << (this->Buf7[0] < 0 ? empty : "[" + to_string(this->Buf7[2]) + ", " + to_string(this->Buf7[1]) +  "]") << "\n";
+    simFile << "Buf8: " << (this->Buf8[0] < 0 ? empty : "[" + decodedInstructions[this->Buf8[0]] + "]") << "\n";
+    simFile << "Buf9: " << (this->Buf9[0] < 0 ? empty : "[" + to_string(this->Buf9[2]) + ", R" + to_string(this->Buf9[1]) +  "]") << "\n";
+    simFile << "Buf10: " << (this->Buf10[0] < 0 ? empty : "[" + to_string(this->Buf10[2]) + ", R" + to_string(this->Buf10[1]) + "]") << "\n";
+    simFile << "Buf11: " << (this->Buf11[0] < 0 ? empty : "[" + decodedInstructions[this->Buf11[0]] + "]") << "\n";
+    simFile << "Buf12: " << (this->Buf12[0] < 0 ? empty : "[" + to_string(this->Buf12[2]) + "]") << "\n\n";
 
     // Create the "Registers" section
     string registersSection = "Registers\n";
@@ -310,8 +320,8 @@ protected:
     registersSection.append(to_string(modRegisterValues[26]) + "\t" + to_string(modRegisterValues[27]) + "\t");\
     registersSection.append(to_string(modRegisterValues[28]) + "\t" + to_string(modRegisterValues[29]) + "\t");
     registersSection.append(to_string(modRegisterValues[30]) + "\t" + to_string(modRegisterValues[31]) + "\n");
-    registersSection.append("HI:\t" + to_string(this->hi) + "\n");
-    registersSection.append("LO:\t" + to_string(this->lo) + "\n\n");
+    registersSection.append("HI:\t" + to_string(modRegisterValues[32]) + "\n");
+    registersSection.append("LO:\t" + to_string(modRegisterValues[33]) + "\n\n");
 
     simFile << registersSection;
     // Create the "Data" section
@@ -336,26 +346,28 @@ protected:
     }
 
     bool isBreak = false;
-    int unit1Return = 0, unit2Return = 0, unit3Return = 0, unit4Return = 0;
+    int unit1Return = 0, unit2Return = 0, unit3Return = 0, unit4Return = 0, unit5Return = 0, unit6Return = 0;
     while(!isBreak){
       isBreak = instruction_fetch();
+
       instruction_issue();
-
-      display_lock();
-
-
-      // unit1Return = executeALU2();
-  		// unit2Return = executeDIV();
-      // unit3Return = executeMUL1();
-      // unit4Return = executeALU1();
-      //
-  		// mem();
+      // cout << 2 << "x " << endl;
+      unit1Return = executeALU2();
+  		unit2Return = executeDIV();
+      unit3Return = executeMUL1();
+      unit4Return = executeALU1();
+      unit5Return = executeMUL2();
+      unit6Return = executeMUL3();
+      // cout << 3 << "x " << endl;
+  		mem();
+      // cout << 4 << "x " << endl;
   		wb();
+      // cout << 5 << "x " << endl;
       flipLatch();
-
+      // cout << 6 << "x " << endl;
       display();
+      // cout << 7 << "x " << endl;
     }
-
   }
 
   void flipLatch()
@@ -384,76 +396,79 @@ protected:
   }
 
   void instruction_issue(){
-    int preALU1empty = BUF_2_SIZE - this->Buf2.size(); //num of empty slots in ALU 1
+    int preALU2empty = BUF_2_SIZE - this->Buf2.size(); //num of empty slots in ALU 1
     int preDIVempty = BUF_3_SIZE - this->Buf3.size(); //num of empty slots in ALU 1
   	int preMULempty = BUF_4_SIZE - this->Buf4.size(); //num of empty slots in ALU 2
-  	int preALU2empty = BUF_5_SIZE - this->Buf5.size(); //num of empty slots in ALU 2
+  	int preALU1empty = BUF_5_SIZE - this->Buf5.size(); //num of empty slots in ALU 2
 
     this->Buf2_Update = this->Buf2;
     this->Buf3_Update = this->Buf3;
     this->Buf4_Update = this->Buf4;
     this->Buf5_Update = this->Buf5;
 
-    std::fill(this->preIssueWrite, this->preIssueWrite+32, 0);//reset preIssue read/write table
-  	std::fill(this->preIssueRead, this->preIssueRead+32, 0);
+    std::fill(this->preIssueWrite, this->preIssueWrite+34, 0);//reset preIssue read/write table
+  	std::fill(this->preIssueRead, this->preIssueRead+34, 0);
 
     vector<int> rmFromPreIssue(0);
 
-  	if (preALU1empty + preALU2empty + preDIVempty + preALU2empty == 0){
+  	if (preALU1empty + preMULempty + preDIVempty + preALU2empty == 0){
       return;
     }
 
     int nbInstrToIssue = this->Buf1.size();
 
     bool buf2ok = true, buf3ok = true, buf4ok = true, buf5ok = true;
-  	if (preALU1empty == 0) buf2ok = false;
+  	if (preALU2empty == 0) buf2ok = false;
   	if (preDIVempty == 0) buf3ok = false;
     if (preMULempty == 0) buf4ok = false;
-    if (preALU2empty == 0) buf5ok = false;
+    if (preALU1empty == 0) buf5ok = false;
 
     while (nbInstrToIssue > 0 &&  (buf2ok || buf3ok || buf4ok || buf5ok)){
 
       int idx = this->Buf1[this->Buf1.size() - nbInstrToIssue];
       getCurrentInstrcution(idx); // set currentNode to current instruction
-      cout << this->decodedInstructions[idx] << endl;
+      // cout << this->decodedInstructions[idx] << endl;
       int instrCount = (this->currentNode->instructionNumber - 256) / 4;//index of instr
       string categoryNumber = this->instructions[instrCount].substr(0,3); // Get the current instruction's category number
       string opcode = this->instructions[instrCount].substr(3,3); // Get the current instruction's opcode
 
-      int rt = stoi(this->currentNode->rt);
-      int rs = stoi(this->currentNode->rs);
-
-      cout << categoryNumber << " " << opcode << " "<< this->currentNode->operation << endl;
+      // cout << categoryNumber << " " << opcode << " "<< this->currentNode->operation << endl;
       if(categoryNumber == "000") { // The instruction is a category 1
+
+        int rt = stoi(this->currentNode->rt);
+
+        string baseAddress = currentNode->baseAddress;
+        int iba = stoi(baseAddress); // base address in integer form
 
         if(opcode == "101" || opcode == "100"){ // LW && SW
 
-          if (!regsInWrite[rs] && !regsInWrite[rt] && !preIssueWrite[rs] && !preIssueWrite[rt]) { //check RAW (but no WAR for LW?)
+        if (!regsInWrite[iba] && !regsInWrite[rt] && !preIssueWrite[iba] && !preIssueWrite[rt]) { //check RAW (but no WAR for LW?)
     				if (buf2ok)
     				{
     					if (opcode == "100") {
-    						//regsInRead[rs] = 1; regsInRead[rt] = 1;//rs be read next cycle, rt after that.
+    						// regsInRead[iba] = 1;
     						//So there is no need to record them because no instr can write to rs/rt within 2 cycles
                 ;
     					}
     					else if (opcode == "101") {
-    						regsInWrite[rt] = 1; //regsInRead[rs] = 1; same reason as SW above
+    						regsInWrite[rt] = 1;
     					}
     					this->Buf2_Update.push_back(idx);
     					rmFromPreIssue.push_back(this->Buf1.size() - nbInstrToIssue);
-              buf2ok == false;
+              buf2ok == BUF_2_SIZE - this->Buf2_Update.size();
     				}
     			}
     			if (opcode == "100") {//update preIssue read/write table for SW
-    				preIssueRead[rs] = 1; preIssueRead[rt] = 1;
+    				preIssueRead[iba] = 1; preIssueWrite[rt] = 1;
     			}
     			else if (opcode == "101") {//update preIssue read/write table for LW
-    				preIssueRead[rs] = 1; preIssueWrite[rt] = 1;
+    				preIssueRead[iba] = 1; preIssueWrite[rt] = 1;
     			}
         }
       } else if(categoryNumber == "001") { // The instruction is a category 2
 
         int rd = stoi(this->currentNode->rd);
+        int rt = stoi(this->currentNode->rt);
 
         if (buf5ok){
           if (opcode == "100" || opcode == "101") {   //SRL, SLA
@@ -464,25 +479,31 @@ protected:
   						regsInWrite[rd] = 1;  //update regsInRead or regsInWrite
   						this->Buf5_Update.push_back(idx);
   						rmFromPreIssue.push_back(this->Buf1.size() - nbInstrToIssue);
-              buf5ok = false;
+              buf5ok = BUF_5_SIZE - this->Buf5_Update.size();
   					}
   					preIssueRead[rt] = 1; preIssueWrite[rd] = 1;
   				}
           // ADD SUB AND OR
           else if (opcode == "000" || opcode == "001" || opcode== "010" || opcode=="011") {
+
+            int rs = stoi(this->currentNode->rs);
+
             if (!regsInRead[rd] && !regsInWrite[rd] && !regsInWrite[rs] && !regsInWrite[rt]
   						&& !preIssueRead[rd] && !preIssueWrite[rd] && !preIssueWrite[rs] && !preIssueWrite[rt]) {//check WAW and WAR and RAW
 
   						regsInWrite[rd] = 1;
   						this->Buf5_Update.push_back(idx);
   						rmFromPreIssue.push_back(this->Buf1.size() - nbInstrToIssue);
-              buf5ok = false;
+              buf5ok = BUF_5_SIZE - this->Buf5_Update.size();
   					}
   					preIssueRead[rs] = 1; preIssueRead[rt] = 1; preIssueWrite[rd] = 1;
   				}
         }
 
       } else if(categoryNumber == "010") { // The instruction is a category 3
+
+        int rt = stoi(this->currentNode->rt);
+        int rs = stoi(this->currentNode->rs);
 
         if (buf5ok){
           // ADDI ANDI ORI
@@ -494,22 +515,85 @@ protected:
   						this->Buf5_Update.push_back(idx);
 
   						rmFromPreIssue.push_back(this->Buf1.size() - nbInstrToIssue);
-              buf5ok = false;
+              buf5ok = BUF_5_SIZE - this->Buf5_Update.size();
   					}
 
   					preIssueRead[rs] = 1; preIssueWrite[rt] = 1;
   				}
         }
       }
-      // else if(categoryNumber == "011") { // The instruction is a category 4
-      //   cout << "decode_category_four()" <<endl;
-      // else if(categoryNumber == "100") { // The instruction is a category 5
-      //   this->preIssueWrite[stoi(this->currentNode->rd)] = 1;
-      // }
+      else if(categoryNumber == "011") { // The instruction is a category 4
+
+        int rt = stoi(this->currentNode->rt);
+        int rs = stoi(this->currentNode->rs);
+
+        if (opcode == "000") { // mult
+          if (buf4ok){ // read rs,rt and write in lo, hi
+            if (!regsInRead[33] && !regsInWrite[33] && !regsInWrite[rs] && !regsInWrite[rt]
+              && !preIssueRead[33] && !preIssueWrite[33] && !preIssueWrite[rs] && !preIssueWrite[rt]) {//check WAW and WAR and RAW
+                regsInWrite[33] = 1;
+                this->Buf4_Update.push_back(idx);
+    						rmFromPreIssue.push_back(this->Buf1.size() - nbInstrToIssue);
+    						buf4ok = BUF_4_SIZE - this->Buf4_Update.size();
+              }
+
+              preIssueRead[rs] = 1; preIssueRead[rt] = 1; preIssueWrite[33] = 1;
+
+          }
+        }else if(opcode == "001"){ //div
+
+          int rt = stoi(this->currentNode->rt);
+          int rs = stoi(this->currentNode->rs);
+          if (buf3ok){ // read rs,rt and write in hi, lo
+            if (!regsInRead[32] && !regsInWrite[32] & !regsInRead[33] && !regsInWrite[33] && !regsInWrite[rs] && !regsInWrite[rt]
+              && !preIssueRead[32] && !preIssueWrite[32] && !preIssueRead[33] && !preIssueWrite[33] && !preIssueWrite[rs] && !preIssueWrite[rt]) {//check WAW and WAR and RAW
+                regsInWrite[33] = 1;
+                regsInWrite[32] = 1;
+
+                this->Buf3_Update.push_back(idx);
+                rmFromPreIssue.push_back(this->Buf1.size() - nbInstrToIssue);
+    						buf3ok = BUF_3_SIZE - this->Buf3_Update.size();
+              }
+
+              preIssueRead[rs] = 1; preIssueRead[rt] = 1; preIssueWrite[33] = 1; preIssueWrite[32] = 1;
+          }
+        }
+      }
+      else if(categoryNumber == "100") { // The instruction is a category 5
+
+        int rd = stoi(this->currentNode->rd);
+
+        if (opcode == "000") { // mfhi
+          if (buf5ok){ // read hi and write in rd
+            if (!regsInRead[rd] && !regsInWrite[rd] && !regsInWrite[32]
+  						&& !preIssueRead[rd] && !preIssueWrite[rd] && !preIssueWrite[32] ) {//check WAW and WAR and RAW
+                regsInWrite[rd] = 1;
+                this->Buf5_Update.push_back(idx);
+    						rmFromPreIssue.push_back(this->Buf1.size() - nbInstrToIssue);
+    						buf5ok = BUF_5_SIZE - this->Buf5_Update.size();
+              }
+
+              preIssueRead[32] = 1;  preIssueWrite[rd] = 1;
+          }
+        }else if (opcode == "001") { // mflo
+          if (buf5ok){ // read lo and write in rd
+            if (!regsInRead[rd] && !regsInWrite[rd] && !regsInWrite[33]
+              && !preIssueRead[rd] && !preIssueWrite[rd] && !preIssueWrite[33] ) {//check WAW and WAR and RAW
+                regsInWrite[rd] = 1;
+                this->Buf5_Update.push_back(idx);
+                rmFromPreIssue.push_back(this->Buf1.size() - nbInstrToIssue);
+                buf5ok = BUF_5_SIZE - this->Buf5_Update.size();
+              }
+
+              preIssueRead[33] = 1;  preIssueWrite[rd] = 1;
+
+            }
+          }
+      }
 
       nbInstrToIssue--;
     }
-    cout << "==================" << endl;
+    // cout << "==================" << endl;
 
     //update preIssue buffer TODO, how to erase without knowing order? remove from the last one!
   	for (int i = rmFromPreIssue.size() - 1; i >= 0; i--)
@@ -517,6 +601,7 @@ protected:
   }
   int executeALU2() //ALU1 handles one SW/LW from preALU1
   {
+    this->Buf6_Update[0] = -1;
   	if (this->Buf2.size() > 0)//FPpreMem = {instr idx, destination reg, result/source/mem dest}
   	{
       int idx = this->Buf2[0];
@@ -528,7 +613,7 @@ protected:
       string categoryNumber = this->instructions[instrCount].substr(0,3); // Get the current instruction's category number
       string opcode = this->instructions[instrCount].substr(3,3); // Get the current instruction's opcode
 
-  		if (opcode == "100" && opcode == "101") { //sw or lw handled exactly the same
+  		if (opcode == "100" || opcode == "101") { //sw or lw handled exactly the same
 
         string baseAddress = currentNode->baseAddress;
         int iba = stoi(baseAddress); // base address in integer form
@@ -546,34 +631,148 @@ protected:
   	return 0;
   }
   int executeDIV(){
-    return 0;
-  }
-  int executeMUL1(){
-    return 0;
-  }
-  int executeALU1(){
-    this->Buf9_Update[0] = -1;//reset FPpost, necessary?
 
-  	if (this->Buf5.size() > 0) {
+    this->Buf7_Update[0] = -1;
 
-      int idx = this->Buf5[0];
-      this->Buf5_Update.erase(this->Buf5_Update.begin());////remove used instr from preALU1
+  	if (this->Buf3.size() > 0)//FPpreMem = {instr idx, destination reg, result/source/mem dest}
+  	{
+      int idx = this->Buf3[0];
+      this->Buf3_Update.erase(this->Buf3_Update.begin());////remove used instr from preALU1
 
-      cout << decodedInstructions[idx] << " xxasdasd "<< endl;
       getCurrentInstrcution(idx); // set currentNode to current instruction
 
       int instrCount = (this->currentNode->instructionNumber - 256) / 4;//index of instr
       string categoryNumber = this->instructions[instrCount].substr(0,3); // Get the current instruction's category number
       string opcode = this->instructions[instrCount].substr(3,3); // Get the current instruction's opcode
 
-      string rdReg = currentNode->rd;
-      int rd = stoi(rdReg); // rt register in integer form
       string rtReg = currentNode->rt;
       int rt = stoi(rtReg); // rt register in integer form
       string rsReg = currentNode->rs;
       int rs = stoi(rsReg); // rt register in integer form
 
+      this->Buf7_Update[0] = idx;
+
+      if (modRegisterValues[rs] != 0){
+        // Unsure about whether the remainder should be -ve or +ve when dividing a -ve number: This gives a -ve remainder
+        int32_t remainder = (int32_t)modRegisterValues[rt] % (int32_t)modRegisterValues[rs];
+        int32_t quotient = (int32_t)modRegisterValues[rt] / (int32_t)modRegisterValues[rs];
+
+        this->Buf7_Update[1] = (uint32_t)quotient;
+        this->Buf7_Update[2] = (uint32_t)remainder;
+      } else{
+        this->Buf7_Update[1] = 0;
+        this->Buf7_Update[2] = 0;
+      }
+      regsInRead[rs] = 0; regsInRead[rt] = 0;
+  	}
+  	return 0;
+  }
+  int executeMUL1(){
+    this->Buf8_Update[0] = -1;
+
+  	if (this->Buf4.size() > 0) {
+
+      int idx = this->Buf4[0];
+      this->Buf4_Update.erase(this->Buf4_Update.begin());////remove used instr from preALU1
+
+      // cout << decodedInstructions[idx] << " xxasdasd "<< endl;
+      getCurrentInstrcution(idx); // set currentNode to current instruction
+
+      int instrCount = (this->currentNode->instructionNumber - 256) / 4;//index of instr
+      string categoryNumber = this->instructions[instrCount].substr(0,3); // Get the current instruction's category number
+      string opcode = this->instructions[instrCount].substr(3,3); // Get the current instruction's opcode
+
+      string rtReg = currentNode->rt;
+      int rt = stoi(rtReg); // rt register in integer form
+      string rsReg = currentNode->rs;
+      int rs = stoi(rsReg); // rt register in integer form
+
+      this->Buf8_Update[0] = idx;
+
+  	}
+  	return 0;
+  }
+
+  int executeMUL2(){
+    this->Buf11_Update[0] = -1;
+
+  	if (this->Buf8[0] > 0) {
+
+      int idx = this->Buf8[0];
+      this->Buf8_Update[0] = -1;
+
+      // cout << decodedInstructions[idx] << " xxasdasd "<< endl;
+      getCurrentInstrcution(idx); // set currentNode to current instruction
+
+      int instrCount = (this->currentNode->instructionNumber - 256) / 4;//index of instr
+      string categoryNumber = this->instructions[instrCount].substr(0,3); // Get the current instruction's category number
+      string opcode = this->instructions[instrCount].substr(3,3); // Get the current instruction's opcode
+
+      string rtReg = currentNode->rt;
+      int rt = stoi(rtReg); // rt register in integer form
+      string rsReg = currentNode->rs;
+      int rs = stoi(rsReg); // rt register in integer form
+
+      this->Buf11_Update[0] = idx;
+
+  	}
+  	return 0;
+  }
+
+  int executeMUL3(){
+    this->Buf12_Update[0] = -1;
+
+  	if (this->Buf11[0] > 0) {
+
+      int idx = this->Buf11[0];
+      this->Buf11_Update[0] = -1;
+
+      // cout << decodedInstructions[idx] << " xxasdasd "<< endl;
+      getCurrentInstrcution(idx); // set currentNode to current instruction
+
+      int instrCount = (this->currentNode->instructionNumber - 256) / 4;//index of instr
+      string categoryNumber = this->instructions[instrCount].substr(0,3); // Get the current instruction's category number
+      string opcode = this->instructions[instrCount].substr(3,3); // Get the current instruction's opcode
+
+      string rtReg = currentNode->rt;
+      int rt = stoi(rtReg); // rt register in integer form
+      string rsReg = currentNode->rs;
+      int rs = stoi(rsReg); // rt register in integer form
+
+      this->Buf12_Update[0] = idx;
+
+      int64_t result = (int64_t)((int32_t)modRegisterValues[rs]) * (int64_t)((int32_t)modRegisterValues[rt]);
+
+      this->Buf12_Update[2] =(int32_t)(result & 0xFFFFFFFF);;
+      regsInRead[rs] = 0; regsInRead[rt] = 0;
+  	}
+  	return 0;
+  }
+
+  int executeALU1(){
+    this->Buf9_Update[0] = -1;
+
+  	if (this->Buf5.size() > 0) {
+
+      int idx = this->Buf5[0];
+      this->Buf5_Update.erase(this->Buf5_Update.begin());////remove used instr from preALU1
+
+      // cout << decodedInstructions[idx] << " xxasdasd "<< endl;
+      getCurrentInstrcution(idx); // set currentNode to current instruction
+
+      int instrCount = (this->currentNode->instructionNumber - 256) / 4;//index of instr
+      string categoryNumber = this->instructions[instrCount].substr(0,3); // Get the current instruction's category number
+      string opcode = this->instructions[instrCount].substr(3,3); // Get the current instruction's opcode
+
       if(categoryNumber == "000") { // The instruction is a category 1
+
+        string rdReg = currentNode->rd;
+        int rd = stoi(rdReg); // rt register in integer form
+        string rtReg = currentNode->rt;
+        int rt = stoi(rtReg); // rt register in integer form
+        string rsReg = currentNode->rs;
+        int rs = stoi(rsReg); // rt register in integer form
+
         this->Buf9_Update[0] = idx;
   			this->Buf9_Update[1] = rd;
   			regsInRead[rt] = 0;//release rt, rs(not actually used)
@@ -586,8 +785,16 @@ protected:
   			}
 
       } else if(categoryNumber == "001") { // The instruction is a category 2
+
+        string rdReg = currentNode->rd;
+        int rd = stoi(rdReg); // rt register in integer form
+        string rtReg = currentNode->rt;
+        int rt = stoi(rtReg); // rt register in integer form
+        string rsReg = currentNode->rs;
+        int rs = stoi(rsReg); // rt register in integer form
+
         this->Buf9_Update[0] = idx;
-  			this->Buf9_Update[1] = rd;
+        this->Buf9_Update[1] = rd;
 
         //assume all the cat-2 will release rs,rt in read here
   			if (opcode == "000") {//add();
@@ -608,6 +815,11 @@ protected:
   			}
       } else if(categoryNumber == "010") { // The instruction is a category 3
 
+        string rtReg = currentNode->rt;
+        int rt = stoi(rtReg); // rt register in integer form
+        string rsReg = currentNode->rs;
+        int rs = stoi(rsReg); // rt register in integer form
+
         this->Buf9_Update[0] = idx;
   			this->Buf9_Update[1] = rt;
 
@@ -627,15 +839,20 @@ protected:
   				regsInRead[rs] = 0;
   			}
       } else if(categoryNumber == "100") { // The instruction is a category 5
+
+        string rdReg = currentNode->rd;
+        int rd = stoi(rdReg); // rt register in integer form
+
+        this->Buf9_Update[0] = idx;
+  			this->Buf9_Update[1] = rd;
+
         if (opcode == "000") {//MFHI
-  				// this->Buf9_Update[2] = modRegisterValues[rs] + io;
-  				// regsInRead[rs] = 0;
-          ;
+  				this->Buf9_Update[2] = modRegisterValues[32];
+  				regsInRead[32] = 0;
   			}
   			else if (opcode == "001") {//MFLO
-  				// this->Buf9_Update[2] = modRegisterValues[rs] & io;
-  				// regsInRead[rs] = 0;
-          ;
+  				this->Buf9_Update[2] = modRegisterValues[33];
+  				regsInRead[33] = 0;
   			}
       }
   	}
@@ -646,31 +863,15 @@ protected:
   {
   	if (this->Buf6[0] >= 0)
   	{
+
       getCurrentInstrcution(this->Buf6[0]); // set currentNode to current instructio
-      Node instr = *this->currentNode;
-  		if (instr.operation == "SW") {//SW
-  			// dataMem[preMem[2]] = regs[preMem[1]];
-  			// regsInRead[preMem[1]] = 0;//release (preMem[1])rt in read for SW
-        string baseAddress = instr.baseAddress;
-        int iba = stoi(baseAddress); // base address in integer form
-        string offset = instr.offset;
-        int io = stoi(offset); // offset in integer form
-        string rtReg = instr.rt;
-        int irt = stoi(rtReg); // rt register in integer form
 
-        regsInRead[irt] = 0;//release (preMem[1])rt in read for SW
+  		if (this->currentNode->operation == "SW") {//SW
 
-        // Store the value from the local register specified into the memory register specified
-        DataValues[(io - inNu + modRegisterValues[iba])/4] = modRegisterValues[irt];
+        DataValues[this->Buf6[2]] = modRegisterValues[this->Buf6[1]];
+  			regsInRead[this->Buf6[1]] = 0;//release (preMem[1])rt in read for SW
   		}
-  		else if (instr.operation == "LW") {//LW
-
-        string baseAddress = instr.baseAddress;
-        int iba = stoi(baseAddress); // base address in integer form
-        string offset = instr.offset;
-        int io = stoi(offset); // offset in integer form
-        string rtReg = instr.rt;
-        int irt = stoi(rtReg); // rt register in integer form
+  		else if (this->currentNode->operation == "LW") {//LW
 
   			this->Buf10_Update[0] = this->Buf6[0];//instr forwarding
   			this->Buf10_Update[1] = this->Buf6[1]; // 1 - destination register
@@ -694,11 +895,38 @@ protected:
   		this->Buf9[0] = -1;//reseting this is unnecessary, since it will be replaced by FPpostALU anyway
   	}
 
+    if (this->Buf9[0] != -1) {
+  		modRegisterValues[this->Buf9[1]] = this->Buf9[2];// 1 - destination register, 2 - value
+  		regsInWrite[this->Buf9[1]] = 0;//release rd(or rt)
+  		this->Buf9[0] = -1;//reseting this is unnecessary, since it will be replaced by FPpostALU anyway
+  	}
+
   	//postMEM write back - only for LW instr
   	if (this->Buf10[0] != -1) {
   		modRegisterValues[this->Buf10[1]] = this->Buf10[2];// 1 - destination register, 2 - value
   		regsInWrite[this->Buf10[1]] = 0;//release rd//release rt for LW
+
   		this->Buf10[0] = -1;
+  	}
+
+    if (this->Buf12[0] != -1) {
+
+  		modRegisterValues[33] = this->Buf12[2];// 1 - destination register, 2 - value
+  		regsInWrite[33] = 0;//release rd//release rt for LW
+      regsInWrite[32] = 0;//release rd//release rt for LW
+
+  		this->Buf12[0] = -1;
+  	}
+
+    if (this->Buf7[0] != -1) {
+
+  		modRegisterValues[33] = this->Buf7[1];// 1 - destination register, 2 - value
+  		regsInWrite[32] = this->Buf7[2]; //release rd//release rt for LW
+      // regsInWrite[32] = 0;//release rd//release rt for LW
+      regsInWrite[33] = 0;//release rd//release rt for LW
+      regsInWrite[32] = 0;//release rd//release rt for LW
+
+  		this->Buf7[0] = -1;
   	}
   	return;
   }
@@ -708,6 +936,7 @@ protected:
     int count = 0;
     int instrCount;
     string instr;
+    // cout << 1 << endl;
     this->execInstr = -1;
 
     this->Buf1_Update = this->Buf1;
@@ -724,17 +953,27 @@ protected:
             this->preIssueWrite[stoi(this->currentNode->rt)] = 1;
           }
         } else if(categoryNumber == "001") { // The instruction is a category 2
+          // cout << "b" << endl;
           this->preIssueWrite[stoi(this->currentNode->rd)] = 1;
         } else if(categoryNumber == "010") { // The instruction is a category 3
           this->preIssueWrite[stoi(this->currentNode->rt)] = 1;
         }
-        // else if(categoryNumber == "011") { // The instruction is a category 4
-        //   cout << "decode_category_four()" <<endl;
+        else if(categoryNumber == "011") { // The instruction is a category 4
+          // cout << "c" << endl;
+          string opcode = this->instructions[instrCount].substr(3,3); // Get the current instruction's opcode
+          if(opcode == "000"){ // MULT
+            this->preIssueWrite[33] = 1; // LO register
+            // this->preIssueWrite[32] = 1; // HI register
+          }else if(opcode == "001") {
+            this->preIssueWrite[33] = 1; // LO register
+            this->preIssueWrite[32] = 1; // HI register
+          }
+        }
         else if(categoryNumber == "100") { // The instruction is a category 5
           this->preIssueWrite[stoi(this->currentNode->rd)] = 1;
         }
     }
-
+    // cout << 2 << endl;
 
     if (this->waitInstr != -1){ // there is a pending branch instr, fetch stalled
 
@@ -763,6 +1002,8 @@ protected:
               }
               currentNode = startingNode->next; // Set the current node to the offsetted location
 
+              this->currentInstructionNumber = currentNode->instructionNumber + 4;
+
           }
 
           execInstr = waitInstr;
@@ -789,7 +1030,10 @@ protected:
                 startingNode = startingNode->next;
             }
             currentNode = startingNode->next; // Set the current node to the offsetted location
+
+            this->currentInstructionNumber = currentNode->instructionNumber + 4;
         }
+
 
         execInstr = waitInstr;
         waitInstr = -1;
@@ -802,6 +1046,7 @@ protected:
           int irs = modRegisterValues[stoi(rsReg)]; // rs register in integer form
           int nextInstructionNumber = currentNode->instructionNumber + io; // Get the next instruction number (to be used if rs > 0)
 
+
           if (this->regsInWrite[stoi(rsReg)] || this->preIssueWrite[stoi(rsReg)])
     				return 0;//still stalled
 
@@ -811,6 +1056,8 @@ protected:
                   startingNode = startingNode->next;
               }
               currentNode = startingNode->next; // Set the current node to the offsetted location
+
+              this->currentInstructionNumber = currentNode->instructionNumber + 4;
           }
 
           execInstr = waitInstr;
@@ -819,6 +1066,8 @@ protected:
       }
       return break_flag; //won't fetch because of the stall
     }
+
+    // cout << 3 << endl;
 
     while(this->Buf1_Update.size() < BUF_1_SIZE && count < FETCH_DECODE_PER_CYCLE){
 
@@ -841,6 +1090,11 @@ protected:
           this->currentInstructionNumber = currentNode->instructionNumber;
           this->execInstr = instrCount;
 
+          this->currentInstructionNumber += 4;
+
+          return break_flag;
+
+
       } else if(currentOperation == "BEQ") {
 
           string offset = currentNode->offset;
@@ -852,21 +1106,9 @@ protected:
 
           int nextInstructionNumber = currentNode->instructionNumber + io; // Get the next instruction number (to be used if rt == rs)
 
-          if (!regsInWrite[stoi(rsReg)] && !regsInWrite[stoi(rtReg)] && !preIssueWrite[stoi(rsReg)] && !preIssueWrite[stoi(rtReg)]) {
-            if(irt == irs) {
-                Node* startingNode = root;
-                while(startingNode->next->instructionNumber != nextInstructionNumber) { // Find the instruction at the offsetted location
-                    startingNode = startingNode->next;
-                }
-                currentNode = startingNode->next; // Set the current node to the offsetted location
-
-                this->currentInstructionNumber = currentNode->instructionNumber;
-                this->execInstr = instrCount;
-            }
-          }
-          else{
-    				this->waitInstr = instrCount;
-          }
+  				this->waitInstr = instrCount;
+          this->currentInstructionNumber += 4;
+          return break_flag;
 
       } else if(currentOperation == "BNE") {
         ////////////sdadadasdas
@@ -879,21 +1121,10 @@ protected:
 
         int nextInstructionNumber = currentNode->instructionNumber + io; // Get the next instruction number (to be used if rt == rs)
 
-        if (!regsInWrite[stoi(rsReg)] && !regsInWrite[stoi(rtReg)] && !preIssueWrite[stoi(rsReg)] && !preIssueWrite[stoi(rtReg)]) {
-          if(irt != irs) {
-              Node* startingNode = root;
-              while(startingNode->next->instructionNumber != nextInstructionNumber) { // Find the instruction at the offsetted location
-                  startingNode = startingNode->next;
-              }
-              currentNode = startingNode->next; // Set the current node to the offsetted location
-
-              this->currentInstructionNumber = currentNode->instructionNumber;
-              this->execInstr = instrCount;
-          }
-        }
-        else{
-          this->waitInstr = instrCount;
-        }
+        this->waitInstr = instrCount;
+        this->currentInstructionNumber += 4;
+        return break_flag;
+        // }
 
       } else if(currentOperation == "BGTZ") {
 
@@ -904,35 +1135,25 @@ protected:
 
           int nextInstructionNumber = currentNode->instructionNumber + io; // Get the next instruction number (to be used if rs > 0)
 
-          if (!regsInWrite[stoi(rsReg)]  && !preIssueWrite[stoi(rsReg)]) {
-            if(irs > 0) {
-                Node* startingNode = root;
-                while(startingNode->next->instructionNumber != nextInstructionNumber) { // Find the instruction at the offsetted location
-                    startingNode = startingNode->next;
-                }
-                currentNode = startingNode->next; // Set the current node to the offsetted location
-
-                this->currentInstructionNumber = currentNode->instructionNumber;
-                this->execInstr = instrCount;
-            }
-          }
-          else{
-            this->waitInstr = instrCount;
-          }
+          this->waitInstr = instrCount;
+          this->currentInstructionNumber += 4;
+          return break_flag;
+          // }
 
       } else if(currentOperation == "BREAK") {
         break_flag = true;
-        cout << currentOperation << endl;
         this->execInstr = instrCount;
 				return break_flag;
       }
       else {//others can be sw, lw, sll, srl, sra, just push to preIssue
 				this->Buf1_Update.push_back(instrCount);
 			}
-      cout << currentOperation << endl;
       count += 1;
       this->currentInstructionNumber += 4;
+
     }
+
+    // cout << 4 << endl;
     return break_flag;
   }
 
@@ -1271,15 +1492,15 @@ protected:
         operation = "MFLO";
     }
 
-    int rt = stoi(this->currentLineOrInstruction.substr(6,5)); // rt register number in binary format
-    int decimal = convertBinaryToDecimal(rt);
-    string rt_naked = to_string(decimal);
-    string rt_printable = "R" + rt_naked;
+    int rd = stoi(this->currentLineOrInstruction.substr(6,5)); // rt register number in binary format
+    int decimal = convertBinaryToDecimal(rd);
+    string rd_naked = to_string(decimal);
+    string rd_printable = "R" + rd_naked;
 
-    this->decodedOutput = operation + " " + rt_printable;
+    this->decodedOutput = operation + " " + rd_printable;
     output.append(this->currentLineOrInstruction + "\t" + to_string(this->currentInstructionNumber) + "\t" + this->decodedOutput + "\n");
 
-    Node* tempNode = new Node(this->currentInstructionNumber, operation, "", "", "", "", rt_naked, "", "", nullptr);
+    Node* tempNode = new Node(this->currentInstructionNumber, operation, "", "", "", "", "", rd_naked, "", nullptr);
     if(currentNode != nullptr) {
         while(currentNode->next != nullptr) {
             currentNode = currentNode->next;
